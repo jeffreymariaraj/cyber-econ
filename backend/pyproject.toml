@@ -12,6 +12,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "groq",
     "python-dotenv",
+    "fpdf2",
 ]
 requires-python = ">=3.9"
 

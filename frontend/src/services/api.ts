@@ -26,4 +26,12 @@ export const getRiskReport = async (assetId: string): Promise<RiskReport> => {
     return response.data;
 };
 
+export const exportReport = async (assetId: string): Promise<Blob> => {
+    const response = await api.get(`/report/${assetId}/export`, {
+        responseType: 'blob',
+    });
+    return response.data;
+};
+
+
 export default api;

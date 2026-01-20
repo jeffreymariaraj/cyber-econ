@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Response
 from typing import List
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -8,9 +8,13 @@ from app.core.database import get_database
 from app.services.nmap_scanner import NmapScanner
 from app.services.risk_calculator import RiskEngine
 from app.services.remediation_service import RemediationService
+from app.services.pdf_report_service import PDFReportService
+
 
 router = APIRouter()
 remediation_service = RemediationService()
+pdf_service = PDFReportService()
+
 
 @router.post("/assets", response_model=AssetResponse, status_code=201)
 async def create_asset(asset: AssetCreate, db: AsyncIOMotorDatabase = Depends(get_database)):
@@ -72,3 +76,17 @@ async def get_risk_report(asset_id: str, db: AsyncIOMotorDatabase = Depends(get_
         vulnerabilities=vulnerabilities,
         remediation_plan=remediation_plan
     )
+
+@router.get("/report/{asset_id}/export")
+async def export_risk_report(asset_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
+    report = await get_risk_report(asset_id, db)
+    pdf_content = pdf_service.generate_report(report)
+    
+    return Response(
+        content=pdf_content,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=Audit_Report_{asset_id}.pdf"
+        }
+    )
+
